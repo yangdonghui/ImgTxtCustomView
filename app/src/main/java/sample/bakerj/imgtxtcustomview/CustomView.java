@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -192,16 +194,16 @@ public class CustomView extends View {
                 case R.styleable.CustomView_titleTextColor:
                     titleTextColor = a.getColor(attr, 0x00000000);//默认黑色字体
                     break;
-                case R.styleable.CustomView_titleTextPaddingLeft:
+                case R.styleable.CustomView_titlePaddingLeft:
                     titlePaddingLeft = a.getDimensionPixelSize(attr, 0);
                     break;
-                case R.styleable.CustomView_titleTextPaddingTop:
+                case R.styleable.CustomView_titlePaddingTop:
                     titlePaddingTop = a.getDimensionPixelSize(attr, 0);
                     break;
-                case R.styleable.CustomView_titleTextPaddingRight:
+                case R.styleable.CustomView_titlePaddingRight:
                     titlePaddingRight = a.getDimensionPixelSize(attr, 0);
                     break;
-                case R.styleable.CustomView_titleTextPaddingBottom:
+                case R.styleable.CustomView_titlePaddingBottom:
                     titlePaddingBottom = a.getDimensionPixelSize(attr, 0);
                     break;
                 case R.styleable.CustomView_subTitleText:
@@ -215,16 +217,16 @@ public class CustomView extends View {
                 case R.styleable.CustomView_subTitleTextColor:
                     subTitleTextColor = a.getColor(attr, 0x00000000);
                     break;
-                case R.styleable.CustomView_subTitleTextPaddingLeft:
+                case R.styleable.CustomView_subTitlePaddingLeft:
                     subTitlePaddingLeft = a.getDimensionPixelSize(attr, 0);
                     break;
-                case R.styleable.CustomView_subTitleTextPaddingTop:
+                case R.styleable.CustomView_subTitlePaddingTop:
                     subTitlePaddingTop = a.getDimensionPixelSize(attr, 0);
                     break;
-                case R.styleable.CustomView_subTitleTextPaddingRight:
+                case R.styleable.CustomView_subTitlePaddingRight:
                     subTitlePaddingRight = a.getDimensionPixelSize(attr, 0);
                     break;
-                case R.styleable.CustomView_subTitleTextPaddingBottom:
+                case R.styleable.CustomView_subTitlePaddingBottom:
                     subTitlePaddingBottom = a.getDimensionPixelSize(attr, 0);
                     break;
             }
@@ -234,5 +236,186 @@ public class CustomView extends View {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint = new TextPaint(paint);
         rect = new Rect();
+    }
+
+    /**
+     * 思路是这样的：我们首先判断是不是EXACTLY模式，如果是，那就可以直接设置值了，
+     * 如果不是，我们先按照UNSPECIFIED模式处理，让子布局得到自己想要的最大值，
+     * 然后判断是否是AT_MOST模式，来做最后的限制。
+     *
+     * @param widthMeasureSpec
+     * @param heightMeasureSpec
+     */
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        int width;
+        int height;
+
+        if (widthMode == MeasureSpec.EXACTLY){
+            //表示我们设置了MATCH_PARENT或者一个准确的数值，含义是父布局要给子布局一个确切的大小。
+            width = widthSize;
+        }else{
+            int desired = getPaddingLeft() + getPaddingRight() + imagePaddingLeft + imagePaddingRight;
+            desired += (imageBitmap!=null)?imageBitmap.getWidth():0;
+            width = Math.max(MIN_SIZE, desired);
+            if (widthMode == MeasureSpec.AT_MOST){
+                //示子布局将被限制在一个最大值之内，通常是子布局设置了wrap_content。
+                width = Math.min(desired, widthSize);
+            }
+        }
+
+        if (heightMode == MeasureSpec.EXACTLY){
+            height = heightSize;
+        }else{
+            int rawWidth = width - getPaddingLeft() - getPaddingRight();
+            int desired = (int)(getPaddingTop() + getPaddingBottom() + imageAspectRatio * rawWidth);
+
+            if (titleText != null){
+                paint.setTextSize(titleTextSize);
+                Paint.FontMetrics fm = paint.getFontMetrics();
+                //文字高度
+                int textHeight = (int) Math.ceil(fm.descent - fm.ascent);
+                desired += (textHeight + titlePaddingTop + titlePaddingBottom);
+            }
+
+            if (subTitleText != null){
+                paint.setTextSize(subTitleTextSize);
+                Paint.FontMetrics fm = paint.getFontMetrics();
+                //文字高度
+                int textHeigt = (int) Math.ceil(fm.descent - fm.ascent);
+                desired += (textHeigt + subTitlePaddingTop + subTitlePaddingBottom);
+            }
+
+            height =Math.max(MIN_SIZE, desired);
+            if (heightMode == MeasureSpec.AT_MOST){
+                height = Math.min(desired, heightSize);
+            }
+        }
+
+        //设置view宽高
+        setMeasuredDimension(width, height);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        mViewWidth = w;
+        mViewHeight = h;
+        System.out.println("mViewWidth:" + mViewWidth + ",mViewHeight:" + mViewHeight);
+
+        super.onSizeChanged(w, h, oldw, oldh);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        rect.left = getPaddingLeft();
+        rect.top = getPaddingTop();
+        rect.right = mViewWidth - getPaddingRight();
+        rect.bottom = mViewHeight - getPaddingBottom();
+
+        paint.setAlpha(255);
+
+        //二级标题
+        if (subTitleText != null){
+            paint.setTextSize(subTitleTextSize);
+            paint.setColor(subTitleTextColor);
+            paint.setTextAlign(Paint.Align.LEFT);
+
+            Paint.FontMetrics fm = paint.getFontMetrics();
+            int textHeight = (int) Math.ceil(fm.descent - fm.ascent);
+
+            int left = getPaddingLeft() + subTitlePaddingLeft;
+            int right = mViewWidth - getPaddingRight() - subTitlePaddingRight;
+            int bottom = mViewHeight - getPaddingBottom() - subTitlePaddingBottom;
+
+            String msg = TextUtils.ellipsize(subTitleText, textPaint, right - left, TextUtils.TruncateAt.END).toString();
+            float textWidth = paint.measureText(msg);
+
+            //起点坐标
+            float x = textWidth < (right - left) ? left + (right - left - textWidth) / 2 : left;
+            float y = bottom - fm.descent;
+
+            canvas.drawText(msg, x, y, paint);
+
+            rect.bottom -= textHeight + getPaddingBottom() + subTitlePaddingBottom;
+        }
+
+        //一级标题
+        if (titleText != null){
+            paint.setTextSize(titleTextSize);
+            paint.setColor(titleTextColor);
+            paint.setTextAlign(Paint.Align.LEFT);
+
+            Paint.FontMetrics fm = paint.getFontMetrics();
+            int textHeight = (int) Math.ceil(fm.descent - fm.ascent);
+
+            int left = getPaddingLeft() + titlePaddingLeft;
+            int right = mViewWidth - getPaddingRight() - titlePaddingRight;
+            float bottom = rect.bottom - titlePaddingBottom;
+
+            String msg = TextUtils.ellipsize(titleText, textPaint, right - left, TextUtils.TruncateAt.END).toString();
+            float textWidth = paint.measureText(msg);
+
+            //起点坐标
+            float x = textWidth < (right - left) ? left + (right - left - textWidth) / 2 : left;
+            float y = bottom - fm.descent;
+
+            canvas.drawText(msg, x, y, paint);
+
+            rect.bottom -= textHeight + getPaddingBottom() + titlePaddingBottom;
+        }
+
+        if (imageBitmap != null){
+            paint.setAlpha((int)(255 * imageAlpha));
+
+            rect.left += imagePaddingLeft;
+            rect.right += imagePaddingRight;
+            rect.top += imagePaddingTop;
+            rect.bottom += imagePaddingBottom;
+
+            if (imageScaleType == SCALE_TYPE_FILLXY){
+                canvas.drawBitmap(imageBitmap, null, rect, paint);
+            }else if (imageScaleType == SCALE_TYPE_CENTER){
+                int bw = imageBitmap.getWidth();
+                int bh = imageBitmap.getHeight();
+
+                if (bw < (rect.right - rect.left)){
+                    int delta = (rect.right - rect.left - bw) / 2;
+                    rect.left += delta;
+                    rect.right -= delta;
+                }
+                if (bh < (rect.bottom - rect.top)){
+                    int delta = (rect.bottom - rect.top - bh) / 2;
+                    rect.top += delta;
+                    rect.bottom -= delta;
+                }
+
+                canvas.drawBitmap(imageBitmap, null, rect, paint);
+            }
+        }
+    }
+
+    public void setImageBitmap(Bitmap bitmap){
+        imageBitmap = bitmap;
+        requestLayout();
+        invalidate();
+    }
+
+    public void setTitleText(String text){
+        titleText = text;
+        requestLayout();
+        invalidate();
+    }
+
+    public void setSubTitleText(String text){
+        subTitleText = text;
+        requestLayout();
+        invalidate();
     }
 }

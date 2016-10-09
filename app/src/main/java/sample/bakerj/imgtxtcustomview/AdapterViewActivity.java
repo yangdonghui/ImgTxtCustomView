@@ -20,7 +20,7 @@ public class AdapterViewActivity extends Activity {
 		R.mipmap.clock, R.mipmap.contacts, R.mipmap.corel, R.mipmap.documents1,
 		R.mipmap.extra, R.mipmap.fallout, R.mipmap.goo, R.mipmap.i_explorer,
 		R.mipmap.network_places, R.mipmap.paint, R.mipmap.rtm, R.mipmap.stellarium,
-		R.mipmap.ventrilo, R.mipmap.where, R.mipmap.win_media, R.mipmap.winrar
+		R.mipmap.ventrilo, R.mipmap.where, R.mipmap.win_media, R.mipmap.winrar, R.mipmap.i_explorer,
 	};
 	
 	@Override
@@ -63,8 +63,8 @@ public class AdapterViewActivity extends Activity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 			holder.customView.setImageBitmap(BitmapFactory.decodeResource(getResources(), srcs[position]));
-			holder.customView.setTitleText("�� " + position +" ��һ������");
-			holder.customView.setSubTitleText("�� " + position +" ����������");
+			holder.customView.setTitleText("第 " + position +" 个一级标题");
+			holder.customView.setSubTitleText("第 " + position +" 个二级标题");
 			return convertView;
 		}
 		

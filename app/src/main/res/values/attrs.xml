@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="imageSrc" format="reference"/>
+    <attr name="imageAspectRadio" format="float"/>
+    <attr name="imageAlpha" format="float"/>
+    <attr name="imagePaddingLeft" format="dimension"/>
+    <attr name="imagePaddingRight" format="dimension"/>
+    <attr name="imagePaddingTop" format="dimension"/>
+    <attr name="imagePaddingBottom" format="dimension"/>
+    <attr name="imageScaleType">
+        <enum name="fillXY" value="0"/>
+        <enum name="center" value="1"/>
+    </attr>
+    
+    <attr name="titleText" format="string"/>
+    <attr name="titleTextSize" format="dimension"/>
+    <attr name="titleTextColor" format="color"/>
+    <attr name="titleTextPaddingLeft" format="dimension"/>
+    <attr name="titleTextPaddingRight" format="dimension"/>
+    <attr name="titleTextPaddingTop" format="dimension"/>
+    <attr name="titleTextPaddingBottom" format="dimension"/>
+
+    <attr name="subTitleText" format="string"/>
+    <attr name="subTitleTextSize" format="dimension"/>
+    <attr name="subTitleTextColor" format="color"/>
+    <attr name="subTitleTextPaddingLeft" format="dimension"/>
+    <attr name="subTitleTextPaddingRight" format="dimension"/>
+    <attr name="subTitleTextPaddingTop" format="dimension"/>
+    <attr name="subTitleTextPaddingBottom" format="dimension"/>
+    
+    <declare-styleable name="CustomView">
+        <attr name="imageSrc"/>
+        <attr name="imageAspectRadio"/>
+        <attr name="imageAlpha"/>
+        <attr name="imagePaddingLeft"/>
+        <attr name="imagePaddingRight"/>
+        <attr name="imagePaddingTop"/>
+        <attr name="imagePaddingBottom"/>
+        <attr name="imageScaleType"/>
+
+        <attr name="titleText"/>
+        <attr name="titleTextSize"/>
+        <attr name="titleTextColor"/>
+        <attr name="titleTextPaddingLeft"/>
+        <attr name="titleTextPaddingRight"/>
+        <attr name="titleTextPaddingTop"/>
+        <attr name="titleTextPaddingBottom"/>
+
+        <attr name="subTitleText"/>
+        <attr name="subTitleTextSize"/>
+        <attr name="subTitleTextColor"/>
+        <attr name="subTitleTextPaddingLeft"/>
+        <attr name="subTitleTextPaddingRight"/>
+        <attr name="subTitleTextPaddingTop"/>
+        <attr name="subTitleTextPaddingBottom"/>
+
+    </declare-styleable>
+
+</resources>
